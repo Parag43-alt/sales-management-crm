@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hosho CRM - Login</title>
+    <style>
+        /* Modern Colorful Aesthetic - System Fonts */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #100a40 0%, #462c9c 35%, #2a88a0 70%, #150d53 100%);
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            color: #1a1a1a;
+        }
+        
+        /* Glassmorphism Login Card */
+        .container { 
+            width: 100%; max-width: 420px; padding: 50px 40px; 
+            background: rgba(255, 255, 255, 0.15); /* Semi-transparent white */
+            border-radius: 16px;
+            backdrop-filter: blur(14px); /* Frosty effect */
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        /* Typography */
+        h2 { color: #ffffff; margin-bottom: 5px; font-weight: 700; font-size: 2em; }
+        .subtitle { color: rgba(255, 255, 255, 0.8); margin-bottom: 35px; font-size: 0.95em; }
+        
+        /* Inputs */
+        .input-group { margin-bottom: 22px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 9px; font-size: 0.85em; color: rgba(255, 255, 255, 0.9); }
+        .input-group input { 
+            width: 100%; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.2); 
+            background: rgba(255, 255, 255, 0.85); /* Clean white background */
+            border-radius: 8px; font-size: 1em; outline: none; transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .input-group input:focus { border-color: #58a6ff; box-shadow: 0 0 10px rgba(88, 166, 255, 0.4); }
+        
+        /* Gradient Button */
+        .login-button { 
+            width: 100%; padding: 14px; 
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%); /* Purple-to-blue gradient */
+            color: #ffffff; border: none; border-radius: 8px; font-weight: 600; font-size: 1.1em;
+            cursor: pointer; margin-top: 10px; transition: transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.3);
+        }
+        .login-button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 25px rgba(37, 117, 252, 0.5);
+        }
+        .login-button:active { transform: translateY(1px); }
+        
+        /* Footer Links */
+        .links-container { margin-top: 25px; }
+        .footer-link { color: #58a6ff; text-decoration: none; font-size: 0.9em; display: block; margin-bottom: 10px; }
+        .footer-link:hover { text-decoration: underline; color: #a5d6ff; }
+        
+        /* Error Message */
+        #errorMessage { color: #ff6b6b; font-size: 0.85em; margin-top: 15px; min-height: 1.5em; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Hosho CRM</h2>
+        <p class="subtitle">Sign in to your professional workspace</p>
+        
+        <div class="input-group">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="name@company.com" required>
+        </div>
+        
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        
+        <button class="login-button" id="loginButton">Login</button>
+        
+        <div class="links-container">
+            <a href="#" class="footer-link">Forgot password?</a>
+            <a href="/" class="footer-link">Don't have an account? Register here</a>
+        </div>
+        
+        <div id="errorMessage"></div>
+    </div>
+
+    <script>
+        const loginButton = document.getElementById('loginButton');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const errorMessage = document.getElementById('errorMessage');
+
+        if (localStorage.getItem("token")) window.location.href = "/dashboard";
+
+        loginButton.addEventListener('click', async () => {
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+            errorMessage.innerText = "";
+            if (!username || !password) { errorMessage.innerText = 'All fields required.'; return; }
+
+            loginButton.innerText = "Authenticating...";
+            loginButton.disabled = true;
+
+            const params = new URLSearchParams();
+            params.append("username", username);
+            params.append("password", password);
+
+            try {
+                const response = await fetch("/api/v1/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: params
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem("token", data.access_token);
+                    window.location.href = "/dashboard";
+                } else {
+                    errorMessage.innerText = data.detail || "Invalid credentials.";
+                    loginButton.innerText = "Login";
+                    loginButton.disabled = false;
+                }
+            } catch (error) {
+                errorMessage.innerText = "Server error.";
+                loginButton.innerText = "Login";
+                loginButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

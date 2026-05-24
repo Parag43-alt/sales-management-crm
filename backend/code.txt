@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hosho CRM - Enterprise Edition</title>
+    <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><path d='M30 25 v50 M70 25 v50 M30 50 h40' stroke='%23fff' stroke-width='12' stroke-linecap='round'/></svg>">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* (SAARA CSS SAME HAI, NO CHANGES HERE) */
+        :root { --bg-base: #0f172a; --bg-surface: #1e293b; --bg-hover: #334155; --border-light: #334155; --text-main: #f8fafc; --text-muted: #94a3b8; --brand-primary: #2563eb; --brand-glow: rgba(37, 99, 235, 0.4); --status-success: #10b981; --status-warning: #f59e0b; --status-danger: #f43f5e; --status-info: #0ea5e9; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-base); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        .sidebar { width: 260px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); padding: 25px 20px; border-right: 1px solid var(--border-light); display: flex; flex-direction: column; z-index: 20; box-shadow: 4px 0 20px rgba(0,0,0,0.3); }
+        .sidebar h2 { color: #fff; margin-bottom: 40px; font-weight: 700; text-align: center; font-size: 22px; letter-spacing: 0.5px; }
+        .sidebar h2 span { color: var(--brand-primary); }
+        .nav-link { display: flex; align-items: center; padding: 12px 16px; color: var(--text-muted); text-decoration: none; margin-bottom: 8px; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 14px; position: relative; overflow: hidden; }
+        .nav-link:hover { background-color: rgba(255,255,255,0.05); color: #fff; transform: translateX(5px); }
+        .nav-link.active { background: linear-gradient(90deg, rgba(37,99,235,0.2) 0%, transparent 100%); color: #fff; border-left: 4px solid var(--brand-primary); box-shadow: inset 20px 0 20px -20px var(--brand-primary); }
+        .main-content { flex: 1; padding: 30px 45px; overflow-y: auto; background-color: var(--bg-base); position: relative; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border-light); padding-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 24px; color: #fff; font-weight: 600; letter-spacing: -0.5px; }
+        .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 13px; box-shadow: 0 4px 15px var(--brand-glow); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--brand-glow); }
+        .btn-outline { background: transparent; color: var(--text-muted); border: 1px solid var(--border-light); padding: 8px 18px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 13px; font-weight: 500; }
+        .btn-outline:hover { background: var(--bg-hover); color: #fff; }
+        .btn-danger { background: rgba(244, 63, 94, 0.1); color: var(--status-danger); border: 1px solid rgba(244, 63, 94, 0.3); padding: 8px 18px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 13px; font-weight: 500; }
+        .btn-danger:hover { background: var(--status-danger); color: white; }
+        .search-box { padding: 10px 16px; width: 300px; border-radius: 8px; border: 1px solid var(--border-light); background: rgba(30, 41, 59, 0.5); color: white; outline: none; font-size: 13px; transition: all 0.3s; backdrop-filter: blur(5px); }
+        .search-box:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.2); background: var(--bg-surface); }
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
+        .kpi-card { background: linear-gradient(145deg, var(--bg-surface), #151e2e); padding: 22px; border-radius: 12px; border: 1px solid var(--border-light); box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: transform 0.3s; position: relative; overflow: hidden; }
+        .kpi-card:hover { transform: translateY(-5px); border-color: var(--text-muted); }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, var(--brand-primary), var(--status-info)); opacity: 0.5; }
+        .kpi-card h3 { margin: 0 0 10px 0; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+        .kpi-card p { margin: 0; font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -1px; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .chart-container { background: var(--bg-surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border-light); height: 320px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .toolbar { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .table-wrapper { background-color: var(--bg-surface); border-radius: 12px; border: 1px solid var(--border-light); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .crm-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .crm-table th { padding: 16px 20px; background: rgba(15, 23, 42, 0.6); color: var(--text-muted); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid var(--border-light); font-weight: 600; letter-spacing: 0.5px; }
+        .crm-table td { padding: 16px 20px; border-bottom: 1px solid var(--border-light); font-size: 14px; color: var(--text-main); font-weight: 400; }
+        .crm-table tr { transition: background-color 0.2s; }
+        .crm-table tr:hover { background-color: rgba(255,255,255,0.03); }
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; display: inline-block; }
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-danger { background: rgba(244, 63, 94, 0.15); color: var(--status-danger); border: 1px solid rgba(244, 63, 94, 0.3); }
+        .badge-info { background: rgba(14, 165, 233, 0.15); color: var(--status-info); border: 1px solid rgba(14, 165, 233, 0.3); }
+        .action-icon { background: transparent; border: 1px solid var(--border-light); color: var(--text-muted); padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; margin-right: 6px; font-size: 12px; font-weight: 500; }
+        .action-icon:hover { color: #fff; border-color: var(--text-main); background: var(--bg-hover); transform: translateY(-1px); }
+        .select-input { background: rgba(15, 23, 42, 0.5); color: var(--text-main); border: 1px solid var(--border-light); padding: 8px 12px; border-radius: 6px; outline: none; font-size: 13px; font-family: 'Inter'; transition: 0.3s; }
+        .select-input:focus { border-color: var(--brand-primary); }
+        .strike { text-decoration: line-through; color: var(--text-muted); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(8px); }
+        .modal-content { background: var(--bg-surface); width: 450px; padding: 35px; border-radius: 16px; border: 1px solid var(--border-light); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); animation: fadeIn 0.3s ease-out; }
+        .modal-content h2 { margin-top: 0; color: #fff; font-size: 20px; font-weight: 600; margin-bottom: 25px; border-bottom: 1px solid var(--border-light); padding-bottom: 15px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 13px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-light); background: rgba(15, 23, 42, 0.5); color: white; outline: none; box-sizing: border-box; font-size: 14px; font-family: 'Inter'; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; }
+        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
+        .toast { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border-light); border-left: 4px solid var(--status-success); padding: 16px 24px; border-radius: 8px; margin-top: 12px; opacity: 0; transform: translateX(100%); transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px; }
+        .toast.error { border-left-color: var(--status-danger); }
+        .toast.show { opacity: 1; transform: translateX(0); }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Hosho <span>CRM</span></h2>
+        <a class="nav-link active" onclick="navigate('dashboard', this)">❖ Overview</a>
+        <a class="nav-link" onclick="navigate('leads', this)">🎯 Leads</a>
+        <a class="nav-link" onclick="navigate('customers', this)">🏢 Accounts</a>
+        <a class="nav-link" onclick="navigate('opportunities', this)">💼 Pipeline</a>
+        <a class="nav-link" onclick="navigate('products', this)">📦 Products</a>
+        <a class="nav-link" onclick="navigate('activities', this)">📅 Tasks</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1 id="page-title">Enterprise Dashboard</h1>
+            <div>
+                <button class="btn-danger" onclick="factoryReset()" style="margin-right: 10px;">Reset Database</button>
+                <button class="btn-outline" onclick="logout()">Sign Out</button>
+            </div>
+        </div>
+        <div id="dynamic-content" class="animate-fade-in">
+            <div style="text-align: center; margin-top: 100px; color: var(--text-muted);">Loading Database...</div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="crudModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Manage Record</h2>
+            <form id="crudForm" onsubmit="saveRecord(event)">
+                <input type="hidden" id="recordId">
+                <input type="hidden" id="recordType">
+                <div id="modalFields"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-outline" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Details</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="toast-container"></div>
+
+    <script>
+        if (!localStorage.getItem("token")) window.location.href = "/login";
+        function logout() { localStorage.removeItem("token"); window.location.href = "/login"; }
+
+        let AppState = { customers: [], opportunities: [], activities: [], leads: [], products: [], isLoaded: false };
+        let activeCharts = []; 
+
+        const mockLeads = [{ id: 1001, name: 'TechVision Inc', email: 'hello@techvision.com', status: 'New', priority: 'High', source: 'Website' }, { id: 1002, name: 'Alpha Solutions', email: 'sales@alpha.com', status: 'Qualified', priority: 'Medium', source: 'Referral' }];
+        const mockProducts = [{ id: 501, name: 'Enterprise License', category: 'Software', price: '4999', stock: 'Unlimited', status: 'Active' }, { id: 502, name: 'Cloud Server Setup', category: 'Service', price: '1200', stock: 'N/A', status: 'Active' }];
+
+        // 🧠 DATABASE PERSISTENCE ENGINE
+        function saveToDatabase() {
+            localStorage.setItem("hosho_crm_db", JSON.stringify(AppState));
+        }
+
+        // Factory Reset (Agar data clean karna ho)
+        function factoryReset() {
+            if(confirm("Are you sure you want to delete all saved data? This will reset the CRM to default.")) {
+                localStorage.removeItem("hosho_crm_db");
+                location.reload();
+            }
+        }
+
+        async function initializeCRM() {
+            try {
+                // 1. Check if we already have saved data in Browser Database
+                const savedDB = localStorage.getItem("hosho_crm_db");
+                
+                if (savedDB) {
+                    AppState = JSON.parse(savedDB);
+                    AppState.isLoaded = true;
+                    navigate('dashboard', document.querySelector('.nav-link'));
+                    showToast("Database loaded from memory.", "success");
+                    return; // Stop here! Don't fetch from backend.
+                }
+
+                // 2. If no saved data, fetch fresh from backend
+                const headers = { 'Authorization': 'Bearer ' + localStorage.getItem('token') };
+                const [custRes, oppRes, actRes, leadsRes, prodRes] = await Promise.all([
+                    fetch('/api/v1/customers', {headers}).catch(()=>null),
+                    fetch('/api/v1/opportunities', {headers}).catch(()=>null),
+                    fetch('/api/v1/activities', {headers}).catch(()=>null),
+                    fetch('/api/v1/leads', {headers}).catch(()=>null),
+                    fetch('/api/v1/products', {headers}).catch(()=>null)
+                ]);
+                
+                AppState.customers = custRes && custRes.ok ? await custRes.json() : [];
+                AppState.opportunities = oppRes && oppRes.ok ? await oppRes.json() : [];
+                AppState.activities = actRes && actRes.ok ? await actRes.json() : [];
+                AppState.leads = leadsRes && leadsRes.ok ? await leadsRes.json() : mockLeads;
+                AppState.products = prodRes && prodRes.ok ? await prodRes.json() : mockProducts;
+                AppState.isLoaded = true;
+                
+                // Save this initial data to our database forever
+                saveToDatabase();
+                
+                navigate('dashboard', document.querySelector('.nav-link'));
+            } catch (err) { showToast("System synchronization failed.", "error"); }
+        }
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+            toast.innerHTML = `<span style="color: var(--status-${type === 'success' ? 'success' : 'danger'})">●</span> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function renderDashboard() {
+            activeCharts.forEach(c => c.destroy()); activeCharts = []; 
+            const totalRev = AppState.opportunities.reduce((sum, o) => sum + (parseFloat(String(o.amount).replace(/[^0-9.-]+/g,"")) || 0), 0);
+            const wonDeals = AppState.opportunities.filter(o => o.stage.includes('Won')).length;
+            const winRate = AppState.opportunities.length ? Math.round((wonDeals/AppState.opportunities.length)*100) : 0;
+            const openTasks = AppState.activities.filter(a => !a.completed).length;
+            const qualifiedLeads = AppState.leads.filter(l => l.status === 'Qualified' || l.status === 'Proposal').length;
+            const activeProds = AppState.products.filter(p => p.status === 'Active').length;
+
+            document.getElementById('dynamic-content').innerHTML = `
+                <div class="kpi-grid animate-fade-in">
+                    <div class="kpi-card"><h3>Total Revenue</h3><p>$${totalRev.toLocaleString()}</p></div>
+                    <div class="kpi-card"><h3>Win/Close Rate</h3><p>${winRate}%</p></div>
+                    <div class="kpi-card"><h3>Active Accounts</h3><p>${AppState.customers.length}</p></div>
+                    <div class="kpi-card"><h3>Qualified Leads</h3><p>${qualifiedLeads}</p></div>
+                    <div class="kpi-card"><h3>Open Tasks</h3><p>${openTasks}</p></div>
+                    <div class="kpi-card"><h3>Active Products</h3><p>${activeProds}</p></div>
+                </div>
+                <div class="charts-grid animate-fade-in">
+                    <div class="chart-container"><canvas id="revChart"></canvas></div>
+                    <div class="chart-container"><canvas id="funnelChart"></canvas></div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                const stages = {}; AppState.opportunities.forEach(o => { stages[o.stage] = (stages[o.stage] || 0) + 1; });
+                Chart.defaults.color = '#94a3b8'; Chart.defaults.font.family = 'Inter';
+                
+                const c1 = new Chart(document.getElementById('revChart'), {
+                    type: 'bar',
+                    data: { labels: ['Q1', 'Q2', 'Q3', 'Q4'], datasets: [{ label: 'Expected Revenue ($)', data: [15000, 32000, 24000, totalRev], backgroundColor: '#2563eb', borderRadius: 6 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { title: {display:true, text:'Revenue Trend', color:'#f8fafc', font:{size:16, weight:'600'}} }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#334155' } } } }
+                });
+                
+                const c2 = new Chart(document.getElementById('funnelChart'), {
+                    type: 'doughnut',
+                    data: { labels: Object.keys(stages), datasets: [{ data: Object.values(stages), backgroundColor: ['#0ea5e9', '#f59e0b', '#f43f5e', '#10b981'], borderWidth: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { title: {display:true, text:'Opportunity Pipeline', color:'#f8fafc', font:{size:16, weight:'600'}} } }
+                });
+                activeCharts.push(c1, c2);
+            }, 100);
+        }
+
+        function renderTable(type) {
+            const content = document.getElementById('dynamic-content');
+            let data = AppState[type];
+            let html = `
+                <div class="toolbar animate-fade-in">
+                    <input type="text" id="searchInput" class="search-box" placeholder="Search ${type}..." onkeyup="filterTable()">
+                    <button class="btn-primary" onclick="openModal('${type}')">+ Create New Record</button>
+                </div>
+                <div class="table-wrapper animate-fade-in"><table class="crm-table">
+            `;
+            
+            const getBadge = (status) => {
+                let cls = 'badge-info';
+                if(status.includes('Active') || status.includes('Won') || status.includes('Converted')) cls = 'badge-success';
+                if(status.includes('Lead') || status.includes('Medium') || status.includes('Proposal')) cls = 'badge-warning';
+                if(status.includes('High') || status.includes('Lost') || status.includes('Inactive')) cls = 'badge-danger';
+                return `<span class="badge ${cls}">${status}</span>`;
+            };
+
+            if (type === 'leads') {
+                html += `<tr><th>ID</th><th>Lead Name</th><th>Email</th><th>Priority</th><th>Status</th><th>Actions</th></tr>`;
+                data.forEach((l, idx) => { html += `<tr class="data-row"><td>#${l.id || idx+1}</td><td style="font-weight:600;">${l.name}</td><td>${l.email}</td><td>${getBadge(l.priority)}</td><td>${getBadge(l.status)}</td><td><button class="action-icon" onclick="openModal('leads', ${idx})">Edit</button><button class="action-icon" onclick="deleteRecord('leads', ${idx})">Del</button></td></tr>`; });
+            } 
+            else if (type === 'products') {
+                html += `<tr><th>ID</th><th>Product Name</th><th>Category</th><th>Price</th><th>Status</th><th>Actions</th></tr>`;
+                data.forEach((p, idx) => { html += `<tr class="data-row"><td>#${p.id || idx+1}</td><td style="font-weight:600;">${p.name}</td><td>${p.category}</td><td style="font-weight:600; color:#10b981;">$${p.price}</td><td>${getBadge(p.status)}</td><td><button class="action-icon" onclick="openModal('products', ${idx})">Edit</button><button class="action-icon" onclick="deleteRecord('products', ${idx})">Del</button></td></tr>`; });
+            }
+            else if (type === 'customers') {
+                html += `<tr><th>ID</th><th>Account Name</th><th>Email</th><th>Health Status</th><th>Actions</th></tr>`;
+                data.forEach((c, idx) => { html += `<tr class="data-row"><td>#${c.id || idx+1}</td><td style="font-weight:600;">${c.name}</td><td style="color:var(--text-muted)">${c.email}</td><td>${getBadge(c.status)}</td><td><button class="action-icon" onclick="openModal('customers', ${idx})">Edit</button><button class="action-icon" onclick="deleteRecord('customers', ${idx})">Del</button></td></tr>`; });
+            } 
+            else if (type === 'opportunities') {
+                html += `<tr><th>ID</th><th>Client</th><th>Deal Value</th><th>Stage</th><th>Actions</th></tr>`;
+                data.forEach((o, idx) => {
+                    html += `<tr class="data-row"><td>#${o.id || idx+1}</td><td style="font-weight:600;">${o.customer}</td><td style="color:var(--status-success); font-weight:600;">${o.amount}</td>
+                    <td><select class="select-input" onchange="updateStage(${idx}, this.value)">
+                        <option value="Discovery" ${o.stage==='Discovery'?'selected':''}>Discovery</option>
+                        <option value="Proposal Sent" ${o.stage==='Proposal Sent'?'selected':''}>Proposal Sent</option>
+                        <option value="Negotiation" ${o.stage==='Negotiation'?'selected':''}>Negotiation</option>
+                        <option value="Closed Won" ${o.stage==='Closed Won'?'selected':''}>Closed Won</option>
+                    </select></td>
+                    <td><button class="action-icon" onclick="openModal('opportunities', ${idx})">Edit</button><button class="action-icon" onclick="deleteRecord('opportunities', ${idx})">Del</button></td></tr>`;
+                });
+            } 
+            else if (type === 'activities') {
+                html += `<tr><th>Status</th><th>Type</th><th>Task Details</th><th>Due Date</th><th>Actions</th></tr>`;
+                data.forEach((a, idx) => {
+                    const strike = a.completed ? 'strike' : '';
+                    html += `<tr class="data-row"><td><input type="checkbox" style="width:18px; height:18px; accent-color:var(--brand-primary);" ${a.completed?'checked':''} onchange="toggleTask(${idx})"></td>
+                    <td>${getBadge(a.type)}</td><td class="${strike}" style="font-weight:500;">${a.description}</td><td style="color:var(--text-muted)">${a.date}</td>
+                    <td><button class="action-icon" onclick="openModal('activities', ${idx})">Edit</button><button class="action-icon" onclick="deleteRecord('activities', ${idx})">Del</button></td></tr>`;
+                });
+            }
+            html += `</table></div>`;
+            content.innerHTML = html;
+        }
+
+        function openModal(type, index = -1) {
+            document.getElementById('crudModal').style.display = 'flex';
+            document.getElementById('recordType').value = type;
+            document.getElementById('recordId').value = index;
+            document.getElementById('modalTitle').innerText = index > -1 ? `Update Record` : `Create New Record`;
+            
+            let record = index > -1 ? AppState[type][index] : {};
+            let html = '';
+
+            const inputGroup = (label, id, type, val) => `<div class="form-group"><label>${label}</label><input type="${type}" id="${id}" value="${val||''}" required></div>`;
+            const selectGroup = (label, id, options, val) => {
+                let opts = options.map(o => `<option ${val===o?'selected':''}>${o}</option>`).join('');
+                return `<div class="form-group"><label>${label}</label><select id="${id}">${opts}</select></div>`;
+            };
+
+            if(type === 'leads') {
+                html += inputGroup('Lead Name', 'f_name', 'text', record.name);
+                html += inputGroup('Email Address', 'f_email', 'email', record.email);
+                html += selectGroup('Priority', 'f_priority', ['High', 'Medium', 'Low'], record.priority);
+                html += selectGroup('Status', 'f_status', ['New', 'Contacted', 'Qualified', 'Proposal', 'Converted', 'Lost'], record.status);
+            } else if (type === 'products') {
+                html += inputGroup('Product Name', 'f_name', 'text', record.name);
+                html += selectGroup('Category', 'f_cat', ['Software', 'Hardware', 'Service', 'Subscription'], record.category);
+                html += inputGroup('Price ($)', 'f_price', 'number', record.price);
+                html += selectGroup('Status', 'f_status', ['Active', 'Inactive'], record.status);
+            } else if(type === 'customers') {
+                html += inputGroup('Account Name', 'f_name', 'text', record.name);
+                html += inputGroup('Contact Email', 'f_email', 'email', record.email);
+                html += selectGroup('Health Status', 'f_status', ['Active', 'Lead', 'Inactive'], record.status);
+            } else if (type === 'opportunities') {
+                html += inputGroup('Client/Account', 'f_customer', 'text', record.customer);
+                html += inputGroup('Deal Value ($)', 'f_amount', 'text', record.amount);
+                html += selectGroup('Pipeline Stage', 'f_stage', ['Discovery', 'Proposal Sent', 'Negotiation', 'Closed Won'], record.stage);
+            } else if (type === 'activities') {
+                html += selectGroup('Activity Type', 'f_type', ['Call', 'Email', 'Meeting', 'Follow-up'], record.type);
+                html += inputGroup('Task Description', 'f_desc', 'text', record.description);
+                html += inputGroup('Due Date', 'f_date', 'date', record.date);
+            }
+            document.getElementById('modalFields').innerHTML = html;
+        }
+
+        function closeModal() { document.getElementById('crudModal').style.display = 'none'; }
+
+        // 🧠 SAVE RECORD & PERSIST
+        function saveRecord(e) {
+            e.preventDefault();
+            const type = document.getElementById('recordType').value;
+            const index = parseInt(document.getElementById('recordId').value);
+            let newData = { id: index > -1 ? AppState[type][index].id : Math.floor(Math.random()*9000)+1000 };
+
+            if(type === 'leads') { newData = {...newData, name: document.getElementById('f_name').value, email: document.getElementById('f_email').value, priority: document.getElementById('f_priority').value, status: document.getElementById('f_status').value }; }
+            else if(type === 'products') { newData = {...newData, name: document.getElementById('f_name').value, category: document.getElementById('f_cat').value, price: document.getElementById('f_price').value, status: document.getElementById('f_status').value }; }
+            else if(type === 'customers') { newData = {...newData, name: document.getElementById('f_name').value, email: document.getElementById('f_email').value, status: document.getElementById('f_status').value }; }
+            else if(type === 'opportunities') { newData = {...newData, customer: document.getElementById('f_customer').value, amount: document.getElementById('f_amount').value, stage: document.getElementById('f_stage').value }; }
+            else if(type === 'activities') { newData = {...newData, type: document.getElementById('f_type').value, description: document.getElementById('f_desc').value, date: document.getElementById('f_date').value, completed: false }; }
+
+            if(index > -1) AppState[type][index] = newData; else AppState[type].push(newData);
+
+            saveToDatabase(); // 🔥 SAVED PERMANENTLY
+            closeModal(); showToast("Record saved securely."); renderTable(type);
+        }
+
+        // 🧠 DELETE RECORD & PERSIST
+        function deleteRecord(type, index) {
+            if(confirm("Delete this record permanently?")) {
+                AppState[type].splice(index, 1);
+                saveToDatabase(); // 🔥 SAVED PERMANENTLY
+                showToast("Record permanently deleted.", "success");
+                renderTable(type);
+            }
+        }
+
+        // 🧠 UPDATE STAGE/TASK & PERSIST
+        function updateStage(index, newStage) { 
+            AppState.opportunities[index].stage = newStage; 
+            saveToDatabase(); // 🔥 SAVED PERMANENTLY
+            showToast(`Pipeline stage advanced to ${newStage}`); 
+        }
+        
+        function toggleTask(index) { 
+            AppState.activities[index].completed = !AppState.activities[index].completed; 
+            saveToDatabase(); // 🔥 SAVED PERMANENTLY
+            renderTable('activities'); showToast("Task status updated."); 
+        }
+
+        function filterTable() { const input = document.getElementById("searchInput").value.toLowerCase(); document.querySelectorAll(".data-row").forEach(row => { row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none"; }); }
+
+        function navigate(section, element) {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active')); element.classList.add('active');
+            const titles = { 'dashboard': 'Enterprise Dashboard', 'leads': 'Lead Management', 'customers': 'Account Directory', 'opportunities': 'Sales Pipeline', 'products': 'Product Inventory', 'activities': 'Task Scheduler' };
+            document.getElementById('page-title').innerText = titles[section];
+            const content = document.getElementById('dynamic-content');
+            content.classList.remove('animate-fade-in'); void content.offsetWidth; content.classList.add('animate-fade-in');
+            if(!AppState.isLoaded) return;
+            if (section === 'dashboard') renderDashboard(); else renderTable(section);
+        }
+
+        window.onload = initializeCRM;
+    </script>
+</body>
+</html>
