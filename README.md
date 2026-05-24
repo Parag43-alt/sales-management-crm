@@ -7,7 +7,7 @@ Hosho CRM bridges the gap between operational sales data and executive-level ana
 ---
 
 ## 🌐 Live Demo
-👉 **[Click here to view the Live CRM Dashboard](https://your-netlify-link-here.netlify.app)** *(Replace with your Netlify Link)*
+👉 **[Click here to view the Live CRM Dashboard](https://sales-management-crm.onrender.com))** 
 
 ---
 
